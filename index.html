@@ -261,7 +261,7 @@ function renderTabs(){
     const b = document.createElement('button');
     b.className = 'tab' + (idx === active ? ' active' : '');
     b.textContent = sec.name;
-    b.onclick = () => { active = idx; render(); };
+    b.onclick = () => { active = idx; render({scrollTop:true}); };
     tabs.appendChild(b);
   });
 }
@@ -280,7 +280,15 @@ function renderMain(){
       const id = idFor(sIdx, iIdx);
       const row = document.createElement('div');
       row.className = 'check ' + (checked[id] ? 'done ' : '') + (item[2] || '');
-      row.onclick = () => { checked[id] = !checked[id]; save(); render(); };
+      row.onclick = () => {
+        const y = window.scrollY;
+        checked[id] = !checked[id];
+        save();
+        row.classList.toggle('done', !!checked[id]);
+        row.querySelector('.box').textContent = checked[id] ? '✓' : '';
+        updateProgress();
+        requestAnimationFrame(() => window.scrollTo(0, y));
+      };
       row.innerHTML = `<div class="box">${checked[id] ? '✓' : ''}</div><div><div class="item-title">${item[0]}</div><div class="challenge">${item[1]}</div></div>`;
       wrap.appendChild(row);
     });
@@ -296,8 +304,18 @@ function updateProgress(){
   document.getElementById('bar').style.width = pct + '%';
 }
 
-function render(){ renderTabs(); renderMain(); updateProgress(); window.scrollTo({top:0, behavior:'smooth'}); }
-function nextSection(){ active = (active + 1) % sections.length; render(); }
+function render(options = {}){
+  const y = window.scrollY;
+  renderTabs();
+  renderMain();
+  updateProgress();
+  if (options.scrollTop) {
+    window.scrollTo({top:0, behavior:'smooth'});
+  } else {
+    requestAnimationFrame(() => window.scrollTo(0, y));
+  }
+}
+function nextSection(){ active = (active + 1) % sections.length; render({scrollTop:true}); }
 function resetChecks(){ if(confirm('Reset all checklist ticks?')) { checked = {}; save(); render(); } }
 render();
 </script>
