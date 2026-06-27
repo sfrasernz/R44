@@ -4,303 +4,429 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="R44 Checklist" />
-  <meta name="theme-color" content="#111827" />
+  <meta name="theme-color" content="#05070a" />
   <title>R44 Checklist</title>
   <style>
     :root {
-      --bg: #0b0f14;
-      --panel: #111827;
-      --panel2: #1f2937;
-      --text: #f9fafb;
+      --bg: #05070a;
+      --panel: #101721;
+      --panel2: #172231;
+      --panel3: #0b1220;
+      --text: #f8fafc;
       --muted: #9ca3af;
+      --line: #2b3646;
       --accent: #38bdf8;
+      --accent-bg: #082f49;
       --ok: #22c55e;
+      --ok-bg: #052e16;
       --warn: #f59e0b;
+      --warn-bg: #451a03;
       --danger: #ef4444;
-      --line: #374151;
+      --danger-bg: #450a0a;
+      --shadow: 0 12px 35px rgba(0,0,0,.32);
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { min-height: 100%; }
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      background: var(--bg);
+      background:
+        radial-gradient(circle at top right, rgba(56,189,248,.12), transparent 34%),
+        linear-gradient(180deg, #05070a 0%, #070b10 100%);
       color: var(--text);
-      padding: env(safe-area-inset-top) 12px env(safe-area-inset-bottom);
+      padding: env(safe-area-inset-top) 12px calc(env(safe-area-inset-bottom) + 14px);
       user-select: none;
+      overscroll-behavior-y: contain;
     }
     header {
       position: sticky;
       top: 0;
       z-index: 10;
-      background: linear-gradient(180deg, var(--bg) 70%, rgba(11,15,20,0));
-      padding: 14px 0 10px;
+      margin: 0 -12px;
+      padding: 14px 12px 10px;
+      background: linear-gradient(180deg, rgba(5,7,10,.98) 78%, rgba(5,7,10,.78) 92%, rgba(5,7,10,0));
+      backdrop-filter: blur(14px);
+    }
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
     }
     h1 {
-      margin: 0 0 4px;
+      margin: 0;
       font-size: 25px;
-      letter-spacing: 0.5px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      letter-spacing: .6px;
+      line-height: 1.1;
     }
-    .subtitle { color: var(--muted); font-size: 13px; line-height: 1.35; }
+    .subtitle {
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.28;
+      margin-top: 5px;
+      max-width: 78vw;
+    }
+    .percent {
+      min-width: 62px;
+      text-align: right;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--ok);
+      letter-spacing: .3px;
+    }
+    .smallcount {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 1px;
+    }
+    .progress {
+      height: 9px;
+      background: #020617;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      margin-top: 10px;
+      box-shadow: inset 0 0 8px rgba(0,0,0,.35);
+    }
+    .bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--ok), var(--accent)); transition: width .16s ease; }
     .tabs {
       display: flex;
       gap: 8px;
       overflow-x: auto;
-      padding: 12px 0 4px;
+      padding: 11px 0 3px;
+      scrollbar-width: none;
     }
-    .tab {
-      border: 1px solid var(--line);
-      background: var(--panel);
-      color: var(--text);
-      border-radius: 999px;
-      padding: 10px 14px;
-      font-size: 15px;
-      white-space: nowrap;
-    }
-    .tab.active { border-color: var(--accent); background: #082f49; }
-    .controls {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
+    .tabs::-webkit-scrollbar { display: none; }
     button {
       border: none;
-      border-radius: 12px;
-      font-weight: 700;
-      min-height: 46px;
+      border-radius: 13px;
+      font-weight: 800;
+      min-height: 45px;
       font-size: 16px;
       color: var(--text);
       background: var(--panel2);
+      touch-action: manipulation;
+    }
+    .tab {
+      border: 1px solid var(--line);
+      background: rgba(16,23,33,.9);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 9px 13px;
+      min-height: 38px;
+      font-size: 14.5px;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+    .tab.active { border-color: var(--accent); background: var(--accent-bg); box-shadow: 0 0 0 1px rgba(56,189,248,.24) inset; }
+    .tab.complete { border-color: rgba(34,197,94,.62); }
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-top: 9px;
     }
     button.primary { background: #075985; }
+    button.secondary { background: #1f2937; }
     button.reset { background: #7f1d1d; }
-    .section { display: none; padding-bottom: 24px; }
+    main { max-width: 760px; margin: 0 auto; }
+    .section { display: none; padding-bottom: 18px; animation: fade .12s ease; }
     .section.active { display: block; }
+    @keyframes fade { from { opacity:.75; transform: translateY(3px);} to { opacity:1; transform:none;} }
     .section-title {
-      margin: 14px 0 10px;
-      padding: 10px 12px;
-      background: var(--panel);
+      margin: 13px 0 10px;
+      padding: 12px 14px;
+      background: rgba(16,23,33,.94);
       border: 1px solid var(--line);
-      border-radius: 12px;
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: 0.4px;
+      border-radius: 15px;
+      box-shadow: var(--shadow);
     }
+    .section-name { font-size: 21px; font-weight: 900; letter-spacing: .6px; }
+    .section-help { color: var(--muted); font-size: 12.5px; margin-top: 4px; }
     .check {
       display: grid;
-      grid-template-columns: 44px 1fr;
-      gap: 10px;
+      grid-template-columns: 42px minmax(0, 1fr) auto;
+      gap: 11px;
       align-items: center;
-      padding: 14px 12px;
+      padding: 13px 12px;
       margin-bottom: 8px;
-      background: var(--panel);
+      background: rgba(16,23,33,.94);
       border: 1px solid var(--line);
-      border-radius: 14px;
-      min-height: 62px;
+      border-radius: 15px;
+      min-height: 66px;
+      box-shadow: 0 8px 22px rgba(0,0,0,.18);
+      transition: transform .08s ease, border-color .14s ease, background .14s ease, opacity .14s ease;
     }
+    .check:active { transform: scale(.992); }
     .box {
       width: 34px;
       height: 34px;
-      border: 2px solid var(--muted);
-      border-radius: 9px;
+      border: 2px solid #64748b;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 24px;
-      font-weight: 900;
-      color: var(--bg);
-      background: transparent;
+      font-weight: 950;
+      color: #052e16;
+      background: #020617;
     }
-    .check.done { opacity: 0.72; border-color: #14532d; }
-    .check.done .box { background: var(--ok); border-color: var(--ok); color: #052e16; }
-    .item-title { font-size: 18px; font-weight: 750; line-height: 1.2; }
-    .challenge { color: var(--muted); font-size: 14px; margin-top: 4px; line-height: 1.25; }
-    .critical { border-left: 5px solid var(--danger); }
-    .caution { border-left: 5px solid var(--warn); }
+    .maintext { min-width: 0; }
+    .item-title {
+      font-size: 19px;
+      font-weight: 850;
+      line-height: 1.14;
+      overflow-wrap: anywhere;
+    }
+    .setting {
+      justify-self: end;
+      text-align: right;
+      font-size: 20px;
+      line-height: 1.05;
+      font-weight: 950;
+      letter-spacing: .35px;
+      color: var(--accent);
+      min-width: 102px;
+      max-width: 46vw;
+      text-transform: uppercase;
+    }
+    .check.done { opacity: .62; border-color: rgba(34,197,94,.45); background: rgba(5,46,22,.38); }
+    .check.done .box { background: var(--ok); border-color: var(--ok); }
+    .check.done .setting { color: #86efac; }
+    .check.next { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(56,189,248,.28) inset, 0 8px 26px rgba(56,189,248,.10); }
+    .check.next .box { border-color: var(--accent); }
+    .check.next::before {
+      content: "NEXT";
+      position: absolute;
+      width: 0; height: 0; overflow: hidden;
+    }
+    .check { position: relative; }
+    .check.caution { border-left: 5px solid var(--warn); }
+    .check.caution .setting { color: var(--warn); }
+    .check.critical { border-left: 5px solid var(--danger); background: linear-gradient(90deg, rgba(69,10,10,.58), rgba(16,23,33,.94)); }
+    .check.critical .setting { color: #fca5a5; }
+    .navhint {
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+      padding: 8px 2px 2px;
+    }
     .footer-note {
       color: var(--muted);
       font-size: 12px;
       line-height: 1.35;
       padding: 10px 2px 24px;
+      max-width: 760px;
+      margin: 0 auto;
     }
-    .progress {
-      height: 8px;
-      background: #030712;
-      border-radius: 999px;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      margin-top: 10px;
+    @media (max-width: 390px) {
+      .item-title { font-size: 18px; }
+      .setting { font-size: 18.5px; min-width: 84px; }
+      .controls { grid-template-columns: 1fr 1fr; }
+      .controls .reset { grid-column: span 2; }
     }
-    .bar { height: 100%; width: 0%; background: var(--ok); transition: width .15s ease; }
   </style>
 </head>
 <body>
 <header>
-  <h1>🚁 R44 Checklist <span id="count" style="font-size:14px;color:var(--muted)">0%</span></h1>
-  <div class="subtitle">Training aid only. Verify against your current R44 POH, placards, local procedures, and instructor guidance.</div>
+  <div class="topline">
+    <div>
+      <h1>🚁 R44 Checklist</h1>
+      <div class="subtitle">Training aid only. Verify against the current R44 POH, placards, local procedures, and instructor guidance.</div>
+    </div>
+    <div class="percent"><span id="percent">0%</span><span class="smallcount" id="count">0 / 0</span></div>
+  </div>
   <div class="progress"><div class="bar" id="bar"></div></div>
   <div class="tabs" id="tabs"></div>
   <div class="controls">
-    <button class="primary" onclick="nextSection()">Next Section</button>
-    <button class="reset" onclick="resetChecks()">Reset All</button>
+    <button class="secondary" onclick="prevSection()">← Prev</button>
+    <button class="primary" onclick="nextSection()">Next →</button>
+    <button class="reset" onclick="resetChecks()">Reset</button>
   </div>
 </header>
 
 <main id="main"></main>
-
-<div class="footer-note">
-  Edit the HTML arrays near the bottom of this file to match your exact aircraft and school checklist. Do not use this in place of the approved checklist.
-</div>
+<div class="navhint">Tap anywhere on a row to tick. Swipe left/right to change section.</div>
+<div class="footer-note">The left text is the item to check. The right text is the expected setting or condition. Edit the checklist data near the bottom of this file to match your specific aircraft and school checklist.</div>
 
 <script>
 const sections = [
   {
     name: "Pre-start",
+    help: "Aircraft setup before engine start.",
     items: [
-      ["Documents / Tech Log", "Checked"],
-      ["External / Covers / Tiedowns", "Complete / removed"],
-      ["Seats / Belts / Doors", "Secure"],
-      ["Fuel Quantity", "Sufficient / caps secure"],
-      ["Circuit Breakers", "In"],
-      ["Controls", "Free and correct"],
-      ["Cyclic Friction", "Off"],
-      ["Collective", "Down / friction as required"],
-      ["Pedals", "Adjusted"],
-      ["Throttle", "Closed"],
-      ["Mixture", "Rich"],
-      ["Governor", "Off"],
-      ["Fuel Shutoff", "On"],
-      ["Carb Heat", "Cold / as required"],
-      ["Area", "Clear"]
+      ["Documents / Tech Log", "CHECKED"],
+      ["External / Covers / Tiedowns", "REMOVED"],
+      ["Seats / Belts / Doors", "SECURE"],
+      ["Fuel Quantity", "SUFFICIENT"],
+      ["Fuel Caps", "SECURE"],
+      ["Circuit Breakers", "IN"],
+      ["Controls", "FREE"],
+      ["Cyclic Friction", "OFF"],
+      ["Collective", "DOWN"],
+      ["Pedals", "ADJUSTED"],
+      ["Throttle", "CLOSED"],
+      ["Mixture", "RICH"],
+      ["Governor", "OFF"],
+      ["Fuel Shutoff", "ON"],
+      ["Carb Heat", "COLD"],
+      ["Area", "CLEAR"]
     ]
   },
   {
     name: "Start",
+    help: "Start sequence and immediate engine checks.",
     items: [
-      ["Master", "On"],
-      ["Beacon / Strobe", "On"],
-      ["Prime", "As required"],
-      ["Throttle", "Cracked as required"],
-      ["Clear Prop / Rotor", "Call clear", "critical"],
-      ["Starter", "Engage"],
-      ["Mixture", "As required for start"],
-      ["Oil Pressure", "Check within limits", "critical"],
-      ["Alternator", "On"],
-      ["Avionics / Radios", "On / set"],
-      ["Clutch", "Engage"],
-      ["Warning Lights", "Check"],
-      ["RPM", "Warm-up / stabilise"]
+      ["Master", "ON"],
+      ["Beacon / Strobe", "ON"],
+      ["Prime", "AS REQD"],
+      ["Throttle", "CRACKED"],
+      ["Clear Prop / Rotor", "CALL CLEAR", "critical"],
+      ["Starter", "ENGAGE"],
+      ["Mixture", "AS REQD"],
+      ["Oil Pressure", "CHECK", "critical"],
+      ["Alternator", "ON"],
+      ["Avionics / Radios", "ON / SET"],
+      ["Clutch", "ENGAGE"],
+      ["Warning Lights", "CHECK"],
+      ["RPM", "STABILISE"]
     ]
   },
   {
     name: "Run-up",
+    help: "Checks before moving to the hover.",
     items: [
-      ["Engine Instruments", "Green"],
-      ["Carb Heat", "Check"],
-      ["Magnetos", "Check"],
-      ["Governor", "On / check"],
-      ["Low RPM Horn / Light", "Check if required"],
-      ["Clutch Light", "Out"],
-      ["Hydraulics", "Check if required", "caution"],
-      ["Altimeter / Instruments", "Set / checked"],
-      ["Transponder", "Set"],
-      ["Radio Call", "As required"]
+      ["Engine Instruments", "GREEN"],
+      ["Carb Heat", "CHECK"],
+      ["Magnetos", "CHECK"],
+      ["Governor", "ON / CHECK"],
+      ["Low RPM Horn / Light", "CHECK"],
+      ["Clutch Light", "OUT"],
+      ["Hydraulics", "CHECK", "caution"],
+      ["Altimeter / Instruments", "SET"],
+      ["Transponder", "SET"],
+      ["Radio Call", "AS REQD"]
     ]
   },
   {
     name: "Before Lift-off",
+    help: "Final items before hover and departure.",
     items: [
-      ["Doors / Belts", "Secure"],
-      ["Controls", "Free"],
-      ["Fuel", "On / sufficient"],
-      ["Engine Gauges", "Green"],
-      ["Governor", "On"],
-      ["RPM", "Green"],
-      ["Warning Lights", "Out"],
-      ["Area / Wind", "Clear / assessed"],
-      ["Carb Heat", "As required"],
-      ["Hover Power", "Check"],
-      ["Final Decision", "Safe to depart"]
+      ["Doors / Belts", "SECURE"],
+      ["Controls", "FREE"],
+      ["Fuel", "ON / SUFF"],
+      ["Engine Gauges", "GREEN"],
+      ["Governor", "ON"],
+      ["RPM", "GREEN"],
+      ["Warning Lights", "OUT"],
+      ["Area / Wind", "ASSESSED"],
+      ["Carb Heat", "AS REQD"],
+      ["Hover Power", "CHECK"],
+      ["Final Decision", "GO / NO-GO"]
     ]
   },
   {
     name: "Shutdown",
+    help: "After landing and securing.",
     items: [
-      ["Collective", "Down"],
-      ["Throttle", "Idle"],
-      ["Cool Down", "As required"],
-      ["Governor", "Off"],
-      ["Clutch", "Disengage"],
-      ["Avionics", "Off"],
-      ["Mixture", "Idle cut-off"],
-      ["Magnetos", "Off / key removed"],
-      ["Master", "Off"],
-      ["Fuel Shutoff", "As required"],
-      ["Rotor", "Stopped / secure"],
-      ["Hobbs / Times", "Recorded"],
-      ["Covers / Tie-downs", "As required"]
+      ["Collective", "DOWN"],
+      ["Throttle", "IDLE"],
+      ["Cool Down", "AS REQD"],
+      ["Governor", "OFF"],
+      ["Clutch", "DISENGAGE"],
+      ["Avionics", "OFF"],
+      ["Mixture", "IDLE CUT-OFF"],
+      ["Magnetos", "OFF"],
+      ["Key", "REMOVED"],
+      ["Master", "OFF"],
+      ["Fuel Shutoff", "AS REQD"],
+      ["Rotor", "STOPPED"],
+      ["Hobbs / Times", "RECORDED"],
+      ["Covers / Tie-downs", "AS REQD"]
     ]
   }
 ];
 
-let active = 0;
-const stateKey = "r44-checklist-state-v1";
+let active = Number(localStorage.getItem("r44-active-section-v2") || 0);
+const stateKey = "r44-checklist-state-v2";
 let checked = JSON.parse(localStorage.getItem(stateKey) || "{}");
+let touchStartX = 0;
+let touchStartY = 0;
 
-function save(){ localStorage.setItem(stateKey, JSON.stringify(checked)); }
+function save(){ localStorage.setItem(stateKey, JSON.stringify(checked)); localStorage.setItem("r44-active-section-v2", String(active)); }
 function idFor(s,i){ return `s${s}i${i}`; }
+function sectionComplete(idx){ return sections[idx].items.every((_, i) => checked[idFor(idx,i)]); }
+function firstOpenInActive(){ return sections[active].items.findIndex((_, i) => !checked[idFor(active,i)]); }
 
 function renderTabs(){
   const tabs = document.getElementById('tabs');
   tabs.innerHTML = '';
   sections.forEach((sec, idx) => {
     const b = document.createElement('button');
-    b.className = 'tab' + (idx === active ? ' active' : '');
-    b.textContent = sec.name;
-    b.onclick = () => { active = idx; render({scrollTop:true}); };
+    b.className = 'tab' + (idx === active ? ' active' : '') + (sectionComplete(idx) ? ' complete' : '');
+    b.textContent = sectionComplete(idx) ? `✓ ${sec.name}` : sec.name;
+    b.onclick = () => { active = idx; save(); render({scrollTop:true}); };
     tabs.appendChild(b);
   });
+  const current = tabs.children[active];
+  if (current) requestAnimationFrame(() => current.scrollIntoView({inline:'center', block:'nearest', behavior:'smooth'}));
 }
 
 function renderMain(){
   const main = document.getElementById('main');
   main.innerHTML = '';
+  const nextIdx = firstOpenInActive();
   sections.forEach((sec, sIdx) => {
     const wrap = document.createElement('section');
     wrap.className = 'section' + (sIdx === active ? ' active' : '');
     const title = document.createElement('div');
     title.className = 'section-title';
-    title.textContent = sec.name;
+    title.innerHTML = `<div class="section-name">${sec.name}</div><div class="section-help">${sec.help || ''}</div>`;
     wrap.appendChild(title);
     sec.items.forEach((item, iIdx) => {
       const id = idFor(sIdx, iIdx);
       const row = document.createElement('div');
-      row.className = 'check ' + (checked[id] ? 'done ' : '') + (item[2] || '');
-      row.onclick = () => {
-        const y = window.scrollY;
-        checked[id] = !checked[id];
-        save();
-        row.classList.toggle('done', !!checked[id]);
-        row.querySelector('.box').textContent = checked[id] ? '✓' : '';
-        updateProgress();
-        requestAnimationFrame(() => window.scrollTo(0, y));
-      };
-      row.innerHTML = `<div class="box">${checked[id] ? '✓' : ''}</div><div><div class="item-title">${item[0]}</div><div class="challenge">${item[1]}</div></div>`;
+      row.className = 'check ' + (checked[id] ? 'done ' : '') + (sIdx === active && iIdx === nextIdx ? 'next ' : '') + (item[2] || '');
+      row.setAttribute('role', 'button');
+      row.setAttribute('aria-pressed', checked[id] ? 'true' : 'false');
+      row.onclick = () => toggleRow(id, row);
+      row.innerHTML = `<div class="box">${checked[id] ? '✓' : ''}</div><div class="maintext"><div class="item-title">${item[0]}</div></div><div class="setting">${item[1]}</div>`;
       wrap.appendChild(row);
     });
     main.appendChild(wrap);
   });
 }
 
+function toggleRow(id, row){
+  const y = window.scrollY;
+  checked[id] = !checked[id];
+  save();
+  row.classList.toggle('done', !!checked[id]);
+  row.setAttribute('aria-pressed', checked[id] ? 'true' : 'false');
+  row.querySelector('.box').textContent = checked[id] ? '✓' : '';
+  updateProgress();
+  refreshNextHighlight();
+  requestAnimationFrame(() => window.scrollTo(0, y));
+}
+
+function refreshNextHighlight(){
+  document.querySelectorAll('.check.next').forEach(el => el.classList.remove('next'));
+  const nextIdx = firstOpenInActive();
+  const activeRows = document.querySelectorAll('.section.active .check');
+  if (nextIdx >= 0 && activeRows[nextIdx]) activeRows[nextIdx].classList.add('next');
+  renderTabs();
+}
+
 function updateProgress(){
   let total = 0, done = 0;
   sections.forEach((sec, sIdx) => sec.items.forEach((_, iIdx) => { total++; if (checked[idFor(sIdx,iIdx)]) done++; }));
   const pct = total ? Math.round(done / total * 100) : 0;
-  document.getElementById('count').textContent = pct + '%';
+  document.getElementById('percent').textContent = pct + '%';
+  document.getElementById('count').textContent = done + ' / ' + total;
   document.getElementById('bar').style.width = pct + '%';
 }
 
@@ -309,14 +435,28 @@ function render(options = {}){
   renderTabs();
   renderMain();
   updateProgress();
-  if (options.scrollTop) {
-    window.scrollTo({top:0, behavior:'smooth'});
-  } else {
-    requestAnimationFrame(() => window.scrollTo(0, y));
-  }
+  if (options.scrollTop) window.scrollTo({top:0, behavior:'smooth'});
+  else requestAnimationFrame(() => window.scrollTo(0, y));
 }
-function nextSection(){ active = (active + 1) % sections.length; render({scrollTop:true}); }
+function nextSection(){ active = (active + 1) % sections.length; save(); render({scrollTop:true}); }
+function prevSection(){ active = (active - 1 + sections.length) % sections.length; save(); render({scrollTop:true}); }
 function resetChecks(){ if(confirm('Reset all checklist ticks?')) { checked = {}; save(); render(); } }
+
+document.addEventListener('touchstart', (e) => {
+  if (!e.changedTouches || e.changedTouches.length === 0) return;
+  touchStartX = e.changedTouches[0].clientX;
+  touchStartY = e.changedTouches[0].clientY;
+}, {passive:true});
+
+document.addEventListener('touchend', (e) => {
+  if (!e.changedTouches || e.changedTouches.length === 0) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.6) {
+    if (dx < 0) nextSection(); else prevSection();
+  }
+}, {passive:true});
+
 render();
 </script>
 </body>
