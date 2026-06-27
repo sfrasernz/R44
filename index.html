@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="R44 Checklist" />
+  <meta name="theme-color" content="#111827" />
+  <title>R44 Checklist</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #111827;
+      --panel2: #1f2937;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --accent: #38bdf8;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --line: #374151;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: env(safe-area-inset-top) 12px env(safe-area-inset-bottom);
+      user-select: none;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: linear-gradient(180deg, var(--bg) 70%, rgba(11,15,20,0));
+      padding: 14px 0 10px;
+    }
+    h1 {
+      margin: 0 0 4px;
+      font-size: 25px;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .subtitle { color: var(--muted); font-size: 13px; line-height: 1.35; }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 12px 0 4px;
+    }
+    .tab {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 15px;
+      white-space: nowrap;
+    }
+    .tab.active { border-color: var(--accent); background: #082f49; }
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    button {
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      min-height: 46px;
+      font-size: 16px;
+      color: var(--text);
+      background: var(--panel2);
+    }
+    button.primary { background: #075985; }
+    button.reset { background: #7f1d1d; }
+    .section { display: none; padding-bottom: 24px; }
+    .section.active { display: block; }
+    .section-title {
+      margin: 14px 0 10px;
+      padding: 10px 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+    }
+    .check {
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 14px 12px;
+      margin-bottom: 8px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      min-height: 62px;
+    }
+    .box {
+      width: 34px;
+      height: 34px;
+      border: 2px solid var(--muted);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--bg);
+      background: transparent;
+    }
+    .check.done { opacity: 0.72; border-color: #14532d; }
+    .check.done .box { background: var(--ok); border-color: var(--ok); color: #052e16; }
+    .item-title { font-size: 18px; font-weight: 750; line-height: 1.2; }
+    .challenge { color: var(--muted); font-size: 14px; margin-top: 4px; line-height: 1.25; }
+    .critical { border-left: 5px solid var(--danger); }
+    .caution { border-left: 5px solid var(--warn); }
+    .footer-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+      padding: 10px 2px 24px;
+    }
+    .progress {
+      height: 8px;
+      background: #030712;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      margin-top: 10px;
+    }
+    .bar { height: 100%; width: 0%; background: var(--ok); transition: width .15s ease; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>🚁 R44 Checklist <span id="count" style="font-size:14px;color:var(--muted)">0%</span></h1>
+  <div class="subtitle">Training aid only. Verify against your current R44 POH, placards, local procedures, and instructor guidance.</div>
+  <div class="progress"><div class="bar" id="bar"></div></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="controls">
+    <button class="primary" onclick="nextSection()">Next Section</button>
+    <button class="reset" onclick="resetChecks()">Reset All</button>
+  </div>
+</header>
+
+<main id="main"></main>
+
+<div class="footer-note">
+  Edit the HTML arrays near the bottom of this file to match your exact aircraft and school checklist. Do not use this in place of the approved checklist.
+</div>
+
+<script>
+const sections = [
+  {
+    name: "Pre-start",
+    items: [
+      ["Documents / Tech Log", "Checked"],
+      ["External / Covers / Tiedowns", "Complete / removed"],
+      ["Seats / Belts / Doors", "Secure"],
+      ["Fuel Quantity", "Sufficient / caps secure"],
+      ["Circuit Breakers", "In"],
+      ["Controls", "Free and correct"],
+      ["Cyclic Friction", "Off"],
+      ["Collective", "Down / friction as required"],
+      ["Pedals", "Adjusted"],
+      ["Throttle", "Closed"],
+      ["Mixture", "Rich"],
+      ["Governor", "Off"],
+      ["Fuel Shutoff", "On"],
+      ["Carb Heat", "Cold / as required"],
+      ["Area", "Clear"]
+    ]
+  },
+  {
+    name: "Start",
+    items: [
+      ["Master", "On"],
+      ["Beacon / Strobe", "On"],
+      ["Prime", "As required"],
+      ["Throttle", "Cracked as required"],
+      ["Clear Prop / Rotor", "Call clear", "critical"],
+      ["Starter", "Engage"],
+      ["Mixture", "As required for start"],
+      ["Oil Pressure", "Check within limits", "critical"],
+      ["Alternator", "On"],
+      ["Avionics / Radios", "On / set"],
+      ["Clutch", "Engage"],
+      ["Warning Lights", "Check"],
+      ["RPM", "Warm-up / stabilise"]
+    ]
+  },
+  {
+    name: "Run-up",
+    items: [
+      ["Engine Instruments", "Green"],
+      ["Carb Heat", "Check"],
+      ["Magnetos", "Check"],
+      ["Governor", "On / check"],
+      ["Low RPM Horn / Light", "Check if required"],
+      ["Clutch Light", "Out"],
+      ["Hydraulics", "Check if required", "caution"],
+      ["Altimeter / Instruments", "Set / checked"],
+      ["Transponder", "Set"],
+      ["Radio Call", "As required"]
+    ]
+  },
+  {
+    name: "Before Lift-off",
+    items: [
+      ["Doors / Belts", "Secure"],
+      ["Controls", "Free"],
+      ["Fuel", "On / sufficient"],
+      ["Engine Gauges", "Green"],
+      ["Governor", "On"],
+      ["RPM", "Green"],
+      ["Warning Lights", "Out"],
+      ["Area / Wind", "Clear / assessed"],
+      ["Carb Heat", "As required"],
+      ["Hover Power", "Check"],
+      ["Final Decision", "Safe to depart"]
+    ]
+  },
+  {
+    name: "Shutdown",
+    items: [
+      ["Collective", "Down"],
+      ["Throttle", "Idle"],
+      ["Cool Down", "As required"],
+      ["Governor", "Off"],
+      ["Clutch", "Disengage"],
+      ["Avionics", "Off"],
+      ["Mixture", "Idle cut-off"],
+      ["Magnetos", "Off / key removed"],
+      ["Master", "Off"],
+      ["Fuel Shutoff", "As required"],
+      ["Rotor", "Stopped / secure"],
+      ["Hobbs / Times", "Recorded"],
+      ["Covers / Tie-downs", "As required"]
+    ]
+  }
+];
+
+let active = 0;
+const stateKey = "r44-checklist-state-v1";
+let checked = JSON.parse(localStorage.getItem(stateKey) || "{}");
+
+function save(){ localStorage.setItem(stateKey, JSON.stringify(checked)); }
+function idFor(s,i){ return `s${s}i${i}`; }
+
+function renderTabs(){
+  const tabs = document.getElementById('tabs');
+  tabs.innerHTML = '';
+  sections.forEach((sec, idx) => {
+    const b = document.createElement('button');
+    b.className = 'tab' + (idx === active ? ' active' : '');
+    b.textContent = sec.name;
+    b.onclick = () => { active = idx; render(); };
+    tabs.appendChild(b);
+  });
+}
+
+function renderMain(){
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+  sections.forEach((sec, sIdx) => {
+    const wrap = document.createElement('section');
+    wrap.className = 'section' + (sIdx === active ? ' active' : '');
+    const title = document.createElement('div');
+    title.className = 'section-title';
+    title.textContent = sec.name;
+    wrap.appendChild(title);
+    sec.items.forEach((item, iIdx) => {
+      const id = idFor(sIdx, iIdx);
+      const row = document.createElement('div');
+      row.className = 'check ' + (checked[id] ? 'done ' : '') + (item[2] || '');
+      row.onclick = () => { checked[id] = !checked[id]; save(); render(); };
+      row.innerHTML = `<div class="box">${checked[id] ? '✓' : ''}</div><div><div class="item-title">${item[0]}</div><div class="challenge">${item[1]}</div></div>`;
+      wrap.appendChild(row);
+    });
+    main.appendChild(wrap);
+  });
+}
+
+function updateProgress(){
+  let total = 0, done = 0;
+  sections.forEach((sec, sIdx) => sec.items.forEach((_, iIdx) => { total++; if (checked[idFor(sIdx,iIdx)]) done++; }));
+  const pct = total ? Math.round(done / total * 100) : 0;
+  document.getElementById('count').textContent = pct + '%';
+  document.getElementById('bar').style.width = pct + '%';
+}
+
+function render(){ renderTabs(); renderMain(); updateProgress(); window.scrollTo({top:0, behavior:'smooth'}); }
+function nextSection(){ active = (active + 1) % sections.length; render(); }
+function resetChecks(){ if(confirm('Reset all checklist ticks?')) { checked = {}; save(); render(); } }
+render();
+</script>
+</body>
+</html>
