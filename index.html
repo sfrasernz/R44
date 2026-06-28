@@ -265,7 +265,7 @@
 <header>
   <div class="topline">
     <div>
-      <h1>🚁 R44 Checklist v2</h1>
+      <h1>🚁 R44 Raven II Checklist</h1>
       <div class="subtitle">Training aid only. Verify against the current R44 POH, placards, local procedures, and instructor guidance.</div>
     </div>
     <div class="percent"><span id="percent">0%</span><span class="smallcount" id="count">0 / 0</span></div>
@@ -281,7 +281,7 @@
 
 <main id="main"></main>
 <div class="navhint">Tap anywhere on a row to tick. Swipe left/right to change section.</div>
-<div class="footer-note">The left text is the item to check. The right text is the expected setting or condition. Edit the checklist data near the bottom of this file to match your specific aircraft and school checklist.</div>
+<div class="footer-note"></div>
 
 <script>
 const sections = [
@@ -359,14 +359,15 @@ const sections = [
   }
 ];
 
-let active = Number(localStorage.getItem("r44-active-section-v2") || 0);
+// Always open on Pre-start when the checklist is launched.
+let active = 0;
 const stateKey = "r44-checklist-state-v2";
 let checked = JSON.parse(localStorage.getItem(stateKey) || "{}");
 let activeTimers = {};
 let touchStartX = 0;
 let touchStartY = 0;
 
-function save(){ localStorage.setItem(stateKey, JSON.stringify(checked)); localStorage.setItem("r44-active-section-v2", String(active)); }
+function save(){ localStorage.setItem(stateKey, JSON.stringify(checked)); }
 function idFor(s,i){ return `s${s}i${i}`; }
 function sectionComplete(idx){ return sections[idx].items.every((_, i) => checked[idFor(idx,i)]); }
 function firstOpenInActive(){ return sections[active].items.findIndex((_, i) => !checked[idFor(active,i)]); }
@@ -414,10 +415,13 @@ function renderMain(){
 }
 
 function getTimerSeconds(item){
+  // Timer is ONLY enabled when the checklist item explicitly includes:
+  // ["Item text", "Expected setting", "timer", numberOfSeconds]
+  // Example: ["Wait 30 seconds", "Mixture OFF", "timer", 30]
+  // For a normal non-timer row, use only two values:
+  // ["Starter On Light", "Out"]
   if (item[2] === 'timer' && Number(item[3])) return Number(item[3]);
-  const combined = `${item[0]} ${item[1]}`.toLowerCase();
-  const match = combined.match(/(\d+)\s*(second|seconds|sec|secs|s)\b/);
-  return match ? Number(match[1]) : 0;
+  return 0;
 }
 
 function setRowDone(id, row, done){
