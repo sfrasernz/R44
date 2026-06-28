@@ -209,6 +209,36 @@
     .check.caution .setting { color: var(--warn); }
     .check.critical { border-left: 5px solid var(--danger); background: linear-gradient(90deg, rgba(69,10,10,.58), rgba(16,23,33,.94)); }
     .check.critical .setting { color: #fca5a5; }
+
+    .settingblock {
+      justify-self: end;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 7px;
+      min-width: 102px;
+      max-width: 48vw;
+    }
+    .timer-btn {
+      min-height: 34px;
+      padding: 6px 11px;
+      border-radius: 999px;
+      background: var(--warn-bg);
+      border: 1px solid rgba(245,158,11,.55);
+      color: #fde68a;
+      font-size: 14px;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+    .timer-running {
+      border-color: rgba(245,158,11,.85);
+      box-shadow: 0 0 0 1px rgba(245,158,11,.24) inset, 0 8px 26px rgba(245,158,11,.12);
+    }
+    .timer-running .box {
+      border-color: var(--warn);
+      color: var(--warn);
+    }
+
     .navhint {
       color: var(--muted);
       font-size: 12px;
@@ -268,8 +298,8 @@ const sections = [
       ["Cyclic", "Neutral/Friction ON"],
       ["Rotor Brake", "Disengaged"],
       ["Landing Lights", "OFF"],
-      ["Cluthc", "Disengaged"],
-      ["Altimeter "Set"],
+      ["Clutch", "Disengaged"],
+      ["Altimeter", "Set"],
       ["HYD and Governor Switches", "ON"],
     ]
   },
@@ -302,12 +332,12 @@ const sections = [
       ["Engine Gauges", "Green"],
       ["Mag drop at 75% RPM", "7% in 2 Seconds"],
       ["Sprag clutch check", "Needles Split"],
-      ["Doors", "Closed and Latched"]
-      ["Limit MAP Chart", "Check"]
-      ["Frictions", "OFF"]
-      ["Hydraulic System", "Check"]
-      ["Governor On, Increase Throttle", "RPM 101-102%"]
-      ["Warning Lights", "Out"]
+      ["Doors", "Closed and Latched"],
+      ["Limit MAP Chart", "Check"],
+      ["Frictions", "OFF"],
+      ["Hydraulic System", "Check"],
+      ["Governor On, Increase Throttle", "RPM 101-102%"],
+      ["Warning Lights", "Out"],
       ["Lift collective slightly, Reduce RPM", "Horn/Light at 97%"]
 
     ]
@@ -316,12 +346,12 @@ const sections = [
     name: "Shutdown",
     help: "After landing and securing.",
     items: [
-      ["Collective Down RPM 60-70%", "Fiction ON"],
-      ["Cyclic and Pedals Neutral", "Fiction ON"],
+      ["Collective Down RPM 60-70%", "Friction ON"],
+      ["Cyclic and Pedals Neutral", "Friction ON"],
       ["CHT drop", "Throttle Closed"],
       ["Clutch Switch", "Disengage"],
-      ["Wait 30 seconds", "Miture OFF"],
-      ["Wait 30 seconds", "Apply Rotor Brake"],
+      ["Wait 30 seconds", "Mixture OFF", "timer", 30],
+      ["Wait 30 seconds", "Apply Rotor Brake", "timer", 30],
       ["Clutch Light", "Extinguishes"],
       ["Alt, Battery and Ignition Switches", "OFF"],
       ["Hobbs / Times", "RECORDED"],
@@ -332,6 +362,7 @@ const sections = [
 let active = Number(localStorage.getItem("r44-active-section-v2") || 0);
 const stateKey = "r44-checklist-state-v2";
 let checked = JSON.parse(localStorage.getItem(stateKey) || "{}");
+let activeTimers = {};
 let touchStartX = 0;
 let touchStartY = 0;
 
@@ -368,24 +399,109 @@ function renderMain(){
     sec.items.forEach((item, iIdx) => {
       const id = idFor(sIdx, iIdx);
       const row = document.createElement('div');
-      row.className = 'check ' + (checked[id] ? 'done ' : '') + (sIdx === active && iIdx === nextIdx ? 'next ' : '') + (item[2] || '');
+      const seconds = getTimerSeconds(item);
+      const itemClass = item[2] && item[2] !== 'timer' ? item[2] : '';
+      row.className = 'check ' + (checked[id] ? 'done ' : '') + (sIdx === active && iIdx === nextIdx ? 'next ' : '') + itemClass;
       row.setAttribute('role', 'button');
       row.setAttribute('aria-pressed', checked[id] ? 'true' : 'false');
-      row.onclick = () => toggleRow(id, row);
-      row.innerHTML = `<div class="box">${checked[id] ? '✓' : ''}</div><div class="maintext"><div class="item-title">${item[0]}</div></div><div class="setting">${item[1]}</div>`;
+      row.onclick = () => toggleRow(id, row, item);
+      const timerButton = seconds ? `<button class="timer-btn" onclick="timerButtonClick(event, '${id}', ${seconds})">${checked[id] ? 'Done' : 'Start ' + seconds + 's'}</button>` : '';
+      row.innerHTML = `<div class="box">${checked[id] ? '✓' : ''}</div><div class="maintext"><div class="item-title">${item[0]}</div></div><div class="settingblock"><div class="setting">${item[1]}</div>${timerButton}</div>`;
       wrap.appendChild(row);
     });
     main.appendChild(wrap);
   });
 }
 
-function toggleRow(id, row){
-  const y = window.scrollY;
-  checked[id] = !checked[id];
+function getTimerSeconds(item){
+  if (item[2] === 'timer' && Number(item[3])) return Number(item[3]);
+  const combined = `${item[0]} ${item[1]}`.toLowerCase();
+  const match = combined.match(/(\d+)\s*(second|seconds|sec|secs|s)\b/);
+  return match ? Number(match[1]) : 0;
+}
+
+function setRowDone(id, row, done){
+  checked[id] = done;
   save();
   row.classList.toggle('done', !!checked[id]);
   row.setAttribute('aria-pressed', checked[id] ? 'true' : 'false');
   row.querySelector('.box').textContent = checked[id] ? '✓' : '';
+  const btn = row.querySelector('.timer-btn');
+  if (btn && done) btn.textContent = 'Done';
+}
+
+function cancelTimer(id, row, seconds){
+  if (activeTimers[id]) {
+    clearInterval(activeTimers[id]);
+    delete activeTimers[id];
+  }
+  row.classList.remove('timer-running');
+  const btn = row.querySelector('.timer-btn');
+  if (btn) btn.textContent = 'Start ' + seconds + 's';
+}
+
+function startTimer(id, row, seconds){
+  const y = window.scrollY;
+  cancelTimer(id, row, seconds);
+  row.classList.add('timer-running');
+  setRowDone(id, row, false);
+
+  const btn = row.querySelector('.timer-btn');
+  let remaining = seconds;
+  if (btn) btn.textContent = remaining + 's';
+
+  activeTimers[id] = setInterval(() => {
+    remaining -= 1;
+    if (btn) btn.textContent = remaining + 's';
+
+    if (remaining <= 0) {
+      clearInterval(activeTimers[id]);
+      delete activeTimers[id];
+      row.classList.remove('timer-running');
+      setRowDone(id, row, true);
+      updateProgress();
+      refreshNextHighlight();
+      if (navigator.vibrate) navigator.vibrate([120, 80, 120]);
+    }
+  }, 1000);
+
+  updateProgress();
+  refreshNextHighlight();
+  requestAnimationFrame(() => window.scrollTo(0, y));
+}
+
+function timerButtonClick(event, id, seconds){
+  event.stopPropagation();
+  const row = event.target.closest('.check');
+  if (!row) return;
+  if (checked[id]) {
+    setRowDone(id, row, false);
+    cancelTimer(id, row, seconds);
+    updateProgress();
+    refreshNextHighlight();
+    return;
+  }
+  startTimer(id, row, seconds);
+}
+
+function toggleRow(id, row, item){
+  const y = window.scrollY;
+  const seconds = getTimerSeconds(item);
+
+  if (seconds) {
+    if (checked[id]) {
+      setRowDone(id, row, false);
+      cancelTimer(id, row, seconds);
+      updateProgress();
+      refreshNextHighlight();
+      requestAnimationFrame(() => window.scrollTo(0, y));
+      return;
+    }
+    startTimer(id, row, seconds);
+    return;
+  }
+
+  setRowDone(id, row, !checked[id]);
   updateProgress();
   refreshNextHighlight();
   requestAnimationFrame(() => window.scrollTo(0, y));
