@@ -257,96 +257,74 @@
 const sections = [
   {
     name: "Pre-start",
-    help: "Aircraft setup before engine start.",
+    help: "Before starting engine.",
     items: [
-      ["Documents / Tech Log", "CHECKED"],
-      ["External / Covers / Tiedowns", "REMOVED"],
-      ["Seats / Belts / Doors", "SECURE"],
-      ["Fuel Quantity", "SUFFICIENT"],
-      ["Fuel Caps", "SECURE"],
-      ["Circuit Breakers", "IN"],
-      ["Controls", "FREE"],
-      ["Cyclic Friction", "OFF"],
-      ["Collective", "DOWN"],
-      ["Pedals", "ADJUSTED"],
-      ["Throttle", "CLOSED"],
-      ["Mixture", "RICH"],
-      ["Governor", "OFF"],
-      ["Fuel Shutoff", "ON"],
-      ["Carb Heat", "COLD"],
-      ["Area", "CLEAR"]
+      ["Seat Belts", "Fastened"],
+      ["Fuel shut-off valve", "ON"],
+      ["Cyclic/Collective Frictions", "OFF"],
+      ["Cyclic/Collective/Pedals", "Full Travel Free"],
+      ["Throttle", "Full Travel Free"],
+      ["Collective", "Full Down/Friction ON"],
+      ["Cyclic", "Neutral/Friction ON"],
+      ["Rotor Brake", "Disengaged"],
+      ["Landing Lights", "OFF"],
+      ["Cluthc", "Disengaged"],
+      ["Altimeter "Set"],
+      ["HYD and Governor Switches", "ON"],
     ]
   },
   {
     name: "Start",
     help: "Start sequence and immediate engine checks.",
     items: [
-      ["Master", "ON"],
-      ["Beacon / Strobe", "ON"],
-      ["Prime", "AS REQD"],
-      ["Throttle", "CRACKED"],
-      ["Clear Prop / Rotor", "CALL CLEAR", "critical"],
-      ["Starter", "ENGAGE"],
-      ["Mixture", "AS REQD"],
-      ["Oil Pressure", "CHECK", "critical"],
-      ["Alternator", "ON"],
-      ["Avionics / Radios", "ON / SET"],
-      ["Clutch", "ENGAGE"],
-      ["Warning Lights", "CHECK"],
-      ["RPM", "STABILISE"]
+      ["Throttle", "Closed", "critical"],
+      ["Battery, Strobe Switches", "ON"],
+      ["Area", "Clear"],
+      ["Mixture", "Rich"],
+      ["Ignition Switch", "Prime, Then Both"],
+      ["Mixture", "Pull OFF"],
+      ["Starter", "Engage until engine fires"],
+      ["Mixture", "Move full rich"],
+      ["Mixture Guard", "Installed"],
+      ["Starter On Light", "Out"],
+      ["Set engine RPM", "50-60%"],
+      ["Clutch Switch", "Engaged"],
+      ["Blades Turning", "Less than 5 secs"],
+      ["Alternator Switch", "ON"],
     ]
   },
   {
     name: "Run-up",
     help: "Checks before moving to the hover.",
     items: [
-      ["Engine Instruments", "GREEN"],
-      ["Carb Heat", "CHECK"],
-      ["Magnetos", "CHECK"],
-      ["Governor", "ON / CHECK"],
-      ["Low RPM Horn / Light", "CHECK"],
-      ["Clutch Light", "OUT"],
-      ["Hydraulics", "CHECK", "caution"],
-      ["Altimeter / Instruments", "SET"],
-      ["Transponder", "SET"],
-      ["Radio Call", "AS REQD"]
-    ]
-  },
-  {
-    name: "Before Lift-off",
-    help: "Final items before hover and departure.",
-    items: [
-      ["Doors / Belts", "SECURE"],
-      ["Controls", "FREE"],
-      ["Fuel", "ON / SUFF"],
-      ["Engine Gauges", "GREEN"],
-      ["Governor", "ON"],
-      ["RPM", "GREEN"],
-      ["Warning Lights", "OUT"],
-      ["Area / Wind", "ASSESSED"],
-      ["Carb Heat", "AS REQD"],
-      ["Hover Power", "CHECK"],
-      ["Final Decision", "GO / NO-GO"]
+      ["Wait for Clutch Light Out", "Circuit breakers in"],
+      ["Warm-up RPM", "60-70%"],
+      ["Engine Gauges", "Green"],
+      ["Mag drop at 75% RPM", "7% in 2 Seconds"],
+      ["Sprag clutch check", "Needles Split"],
+      ["Doors", "Closed and Latched"]
+      ["Limit MAP Chart", "Check"]
+      ["Frictions", "OFF"]
+      ["Hydraulic System", "Check"]
+      ["Governor On, Increase Throttle", "RPM 101-102%"]
+      ["Warning Lights", "Out"]
+      ["Lift collective slightly, Reduce RPM", "Horn/Light at 97%"]
+
     ]
   },
   {
     name: "Shutdown",
     help: "After landing and securing.",
     items: [
-      ["Collective", "DOWN"],
-      ["Throttle", "IDLE"],
-      ["Cool Down", "AS REQD"],
-      ["Governor", "OFF"],
-      ["Clutch", "DISENGAGE"],
-      ["Avionics", "OFF"],
-      ["Mixture", "IDLE CUT-OFF"],
-      ["Magnetos", "OFF"],
-      ["Key", "REMOVED"],
-      ["Master", "OFF"],
-      ["Fuel Shutoff", "AS REQD"],
-      ["Rotor", "STOPPED"],
+      ["Collective Down RPM 60-70%", "Fiction ON"],
+      ["Cyclic and Pedals Neutral", "Fiction ON"],
+      ["CHT drop", "Throttle Closed"],
+      ["Clutch Switch", "Disengage"],
+      ["Wait 30 seconds", "Miture OFF"],
+      ["Wait 30 seconds", "Apply Rotor Brake"],
+      ["Clutch Light", "Extinguishes"],
+      ["Alt, Battery and Ignition Switches", "OFF"],
       ["Hobbs / Times", "RECORDED"],
-      ["Covers / Tie-downs", "AS REQD"]
     ]
   }
 ];
